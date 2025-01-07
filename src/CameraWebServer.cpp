@@ -1,5 +1,6 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
 //            Ensure ESP32 Wrover Module or other board with PSRAM is selected
@@ -36,12 +37,23 @@
 // ===========================
 const char* ssid = "BTS_CIEL";
 const char* password = "ERIR1234";
+
 void startCameraServer();
 void setupLedFlash(int pin);
 
 void setup() {
   Serial.begin(115200);
-   IPAddress local_ip (192, 168, 1, 36);
+
+  IPAddress local_IP (192, 168, 1, 36);
+  IPAddress gateway (192, 168, 1, 100);
+  IPAddress subnet (255, 255, 255, 0);
+
+  if (!WiFi.config(local_IP, gateway, subnet)){
+  Serial.println("échec de la configuration de l'IP statique !");
+  } else {
+  Serial.println ("ip stattique configuée avec succès");
+  }
+
   Serial.setDebugOutput(true);
   Serial.println();
 
@@ -130,9 +142,7 @@ void setup() {
 #if defined(LED_GPIO_NUM)
   setupLedFlash(LED_GPIO_NUM);
 #endif
-
   WiFi.begin(ssid, password);
-WiFi.config(local_ip);
   WiFi.setSleep(false);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -145,7 +155,7 @@ WiFi.config(local_ip);
   startCameraServer();
 
   Serial.print("Camera Ready! Use 'http://");
-  Serial.print(local_ip);
+  Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 }
 
